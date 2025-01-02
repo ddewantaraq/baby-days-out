@@ -1,6 +1,11 @@
 @tailwind base;
+@import './game.css';
 @tailwind components;
 @tailwind utilities;
+
+@import '../styles/layout.css';
+@import '../styles/animations.css';
+@import '../styles/responsive.css';
 
 :root {
   --background: #ffffff;

@@ -1,0 +1,31 @@
+@keyframes jump {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-200px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes doubleJump {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-250px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.jumping {
+    animation: jump 800ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.double-jumping {
+    animation: doubleJump 800ms cubic-bezier(0.4, 0, 0.2, 1);
+}

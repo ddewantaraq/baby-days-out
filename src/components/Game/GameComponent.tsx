@@ -1,0 +1,432 @@
+"use client"
+
+import { useState, useEffect, useCallback, useRef } from 'react';
+import S3Image from '../S3Image';
+import Ground from '../Ground';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { GameState, ObstacleType, Obstacle } from '@/types/game';
+
+const INITIAL_SPEED = 8;
+const SPEED_INCREMENT = 1.0; // Maximum speed increment for milestone achievements
+const BASE_OBSTACLE_SPAWN_INTERVAL = 1200; // Further reduced base spawn interval
+const MIN_OBSTACLE_SPAWN_INTERVAL = 700; // Lower minimum spawn interval
+const SPEED_MILESTONE = 500; // Speed increase milestone
+const SCORE_MILESTONE = 100;
+const DOUBLE_JUMP_MILESTONE = 500;
+
+export default function GameComponent() {
+    const [username, setUsername] = useLocalStorage('username', '');
+    const [highScore, setHighScore] = useLocalStorage('highScore', 0);
+    const [gameState, setGameState] = useState<GameState>('idle');
+    const [score, setScore] = useState(0);
+    const scoreRef = useRef(0);
+    const [speed, setSpeed] = useState(INITIAL_SPEED);
+    const speedRef = useRef(INITIAL_SPEED);
+    const [obstacles, setObstacles] = useState<Obstacle[]>([]);
+    const obstaclesRef = useRef<Obstacle[]>([]);
+    const [isJumping, setIsJumping] = useState(false);
+    const [canDoubleJump, setCanDoubleJump] = useState(true);
+    
+    const gameLoopRef = useRef<number>(0);
+    const lastObstacleSpawnRef = useRef<number>(0);
+    const lastFrameTime = useRef<number>(0);
+    const characterRef = useRef<HTMLDivElement>(null);
+    const gameLoopFuncRef = useRef<() => void>(() => {});
+
+    // Reset game state on mount
+    useEffect(() => {
+        if (username) {
+            setGameState('ready');
+        } else {
+            setGameState('idle');
+        }
+        return () => {
+            if (gameLoopRef.current) {
+                cancelAnimationFrame(gameLoopRef.current);
+            }
+            const character = characterRef.current;
+            if (character) {
+                character.classList.remove('jumping', 'double-jumping');
+            }
+        };
+    }, []);
+
+    const handleUsernameSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const newUsername = formData.get('username') as string;
+        if (newUsername) {
+            setUsername(newUsername);
+            setGameState('ready');
+        }
+    };
+
+    const checkCollisions = useCallback(() => {
+        if (!characterRef.current) return false;
+
+        // Get character's actual DOM position
+        const characterRect = characterRef.current.getBoundingClientRect();
+        const characterLeft = characterRect.left + window.scrollX;
+        const characterTop = characterRect.top + window.scrollY;
+        
+        // More generous collision boxes (1/3 smaller than visual size)
+        const CHARACTER_WIDTH = 80;   // Visual width is 120px
+        const CHARACTER_HEIGHT = 80;  // Visual height is 120px
+        
+        // Define character collision box with buffer space
+        const characterBox = {
+            left: characterLeft + 20,     // Add buffer from sides
+            right: characterLeft + CHARACTER_WIDTH - 20,
+            top: characterTop + 20,       // Add buffer from top/bottom
+            bottom: characterTop + CHARACTER_HEIGHT - 20
+        };
+
+        // Check each obstacle
+        for (const obstacle of obstaclesRef.current) {
+            const obstacleElement = document.getElementById(`obstacle-${obstacle.id}`);
+            if (!obstacleElement) continue;
+
+            const obstacleRect = obstacleElement.getBoundingClientRect();
+            
+            // Define obstacle collision box with buffer space
+            const obstacleBox = {
+                left: obstacleRect.left + 15,    // Add buffer from sides
+                right: obstacleRect.right - 15,
+                top: obstacleRect.top + 15,      // Add buffer from top/bottom
+                bottom: obstacleRect.bottom - 15
+            };
+            
+            // Simple AABB collision with larger tolerance
+            const hasCollision = !(
+                characterBox.right < obstacleBox.left + 10 ||    // Add 10px tolerance
+                characterBox.left > obstacleBox.right - 10 ||    // Add 10px tolerance
+                characterBox.bottom < obstacleBox.top + 10 ||    // Add 10px tolerance
+                characterBox.top > obstacleBox.bottom - 10       // Add 10px tolerance
+            );
+            
+            if (hasCollision) {
+                return true;
+            }
+        }
+        return false;
+    }, []);
+
+    const jump = useCallback(() => {
+        if (!isJumping) {
+            setIsJumping(true);
+            if (characterRef.current) {
+                characterRef.current.classList.add('jumping');
+                setTimeout(() => {
+                    if (characterRef.current) {
+                        characterRef.current.classList.remove('jumping');
+                    }
+                }, 600);
+            }
+            setCanDoubleJump(score >= DOUBLE_JUMP_MILESTONE);
+            setTimeout(() => {
+                if (characterRef.current) {
+                    setIsJumping(false);
+                    setCanDoubleJump(false);
+                }
+            }, 600);
+        } else if (canDoubleJump && score >= DOUBLE_JUMP_MILESTONE) {
+            const characterElement = characterRef.current;
+            if (characterElement) {
+                characterElement.style.animation = 'none';
+                characterElement.offsetHeight; // Trigger reflow
+                characterElement.style.animation = '';
+                characterElement.classList.remove('jumping');
+                characterElement.classList.add('double-jumping');
+                setTimeout(() => {
+                    characterElement.classList.remove('double-jumping');
+                }, 600);
+            }
+            setCanDoubleJump(false);
+        }
+    }, [isJumping, canDoubleJump, score]);
+
+    const gameOver = useCallback(() => {
+        const finalScore = scoreRef.current;  // Get the latest score from ref
+        if (finalScore > highScore || highScore === 0) {
+            setHighScore(finalScore);
+        }
+        setScore(finalScore);  // Update the score state with the final score
+        setGameState('gameover');
+        if (gameLoopRef.current) {
+            cancelAnimationFrame(gameLoopRef.current);
+        }
+    }, [highScore]);
+
+    // Game loop definition
+    const gameLoop = useCallback(() => {
+        const now = Date.now();
+        if (!lastFrameTime.current) {
+            lastFrameTime.current = now;
+        }
+        
+        // Maintain 60fps
+        const elapsed = now - lastFrameTime.current;
+        if (elapsed < 16) {
+            gameLoopRef.current = requestAnimationFrame(gameLoop);
+            return;
+        }
+        lastFrameTime.current = now;
+
+        // Check collisions first
+        if (checkCollisions()) {
+            gameOver();
+            return;
+        }
+
+        // Update obstacle positions with current speed
+        setObstacles(prevObstacles => {
+            const updatedObstacles = prevObstacles
+                .map(obstacle => ({
+                    ...obstacle,
+                    x: obstacle.x - speedRef.current
+                }))
+                .filter(obstacle => obstacle.x > -100);
+            
+            // Keep ref in sync with state
+            obstaclesRef.current = updatedObstacles;
+            return updatedObstacles;
+        });
+
+        // Calculate current spawn interval with even more aggressive scaling after milestones
+        const milestonesPassed = Math.floor(scoreRef.current / SPEED_MILESTONE);
+        const currentSpawnInterval = Math.max(
+            MIN_OBSTACLE_SPAWN_INTERVAL,
+            BASE_OBSTACLE_SPAWN_INTERVAL - (milestonesPassed * 300) - (Math.floor(scoreRef.current / 50) * 50)
+        );
+        
+        // Spawn new obstacles
+        if (now - (lastObstacleSpawnRef.current || now) >= currentSpawnInterval) {
+            const shouldSpawnAngry = Math.random() < 0.2 + (milestonesPassed * 0.05); // Increase angry obstacle probability
+            const obstacleType = shouldSpawnAngry 
+                ? (Math.random() < 0.5 ? ObstacleType.ANGRY_CAT : ObstacleType.ANGRY_DOG)
+                : (Math.random() < 0.5 ? ObstacleType.NORMAL_CAT : ObstacleType.NORMAL_DOG);
+
+            setObstacles(prev => {
+                const lastObstacle = prev[prev.length - 1];
+                if (lastObstacle && lastObstacle.x > window.innerWidth - 100) {
+                    return prev;
+                }
+
+                const newObstacles = [...prev, {
+                    id: Date.now(),
+                    type: obstacleType,
+                    x: window.innerWidth,
+                    y: 0
+                }];
+                
+                // Keep ref in sync with state
+                obstaclesRef.current = newObstacles;
+                return newObstacles;
+            });
+
+            lastObstacleSpawnRef.current = now;
+        }
+
+        // Update score
+        const newScore = scoreRef.current + 1;
+        scoreRef.current = newScore;
+        setScore(newScore);
+
+        // Increase difficulty
+        if (newScore > 0 && newScore % SCORE_MILESTONE === 0) {
+            const speedIncrease = (newScore % SPEED_MILESTONE === 0) ? SPEED_INCREMENT : SPEED_INCREMENT * 0.5;
+            const newSpeed = speedRef.current + speedIncrease;
+            speedRef.current = newSpeed;
+            setSpeed(newSpeed);
+        }
+
+        gameLoopRef.current = requestAnimationFrame(gameLoop);
+    }, [checkCollisions, gameOver]);
+
+    const startGame = useCallback(() => {
+        console.log('Starting game...'); // Debug log
+        if (gameLoopRef.current) {
+            cancelAnimationFrame(gameLoopRef.current);
+        }
+        
+        // Reset all game state
+        setGameState('playing');
+        setScore(0);
+        scoreRef.current = 0;
+        setSpeed(INITIAL_SPEED);
+        speedRef.current = INITIAL_SPEED;
+        setIsJumping(false);
+        setCanDoubleJump(false);
+        
+        // Initialize with one obstacle to start
+        const initialObstacle = {
+            id: Date.now(),
+            type: Math.random() < 0.5 ? ObstacleType.NORMAL_CAT : ObstacleType.NORMAL_DOG,
+            x: window.innerWidth,
+            y: 0
+        };
+        
+        // Reset game state and refs
+        lastObstacleSpawnRef.current = Date.now();
+        lastFrameTime.current = Date.now();
+        
+        // Update both state and ref atomically
+        obstaclesRef.current = [initialObstacle];
+        setObstacles([initialObstacle]);
+        
+        // Start game loop in next frame to ensure state is updated
+        requestAnimationFrame(() => {
+            if (gameLoopFuncRef.current) {
+                gameLoopRef.current = requestAnimationFrame(gameLoopFuncRef.current);
+            }
+        });
+    }, []);
+
+    // Initialize game loop reference - moved higher up to fix dependency issue
+    useEffect(() => {
+        gameLoopFuncRef.current = gameLoop;
+    }, [gameLoop, startGame, checkCollisions, gameOver]);
+
+    
+
+    // Clean up any debug visualization boxes when unmounting
+    useEffect(() => {
+        return () => {
+            const debugBoxes = document.querySelectorAll('[data-debug-box]');
+            debugBoxes.forEach(box => box.remove());
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleKeyPress = (event: KeyboardEvent) => {
+            if (event.code === 'Space') {
+                event.preventDefault();
+                if (gameState === 'ready' || gameState === 'gameover') {
+                    startGame();
+                } else if (gameState === 'playing') {
+                    jump();
+                }
+            }
+        };
+
+        const handleTouchStart = (event: TouchEvent) => {
+            event.preventDefault();
+            if (gameState === 'ready') {
+                startGame();
+            } else if (gameState === 'playing') {
+                jump();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyPress);
+        window.addEventListener('touchstart', handleTouchStart);
+        
+        return () => {
+            window.removeEventListener('keydown', handleKeyPress);
+            window.removeEventListener('touchstart', handleTouchStart);
+        };
+    }, [gameState, jump, startGame]);
+
+    if (!username) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full p-8">
+                <h1 className="text-3xl font-bold mb-8 text-black">Baby Running Game</h1>
+                <form onSubmit={handleUsernameSubmit} className="space-y-4">
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Enter your username"
+                        className="px-4 py-2 border rounded"
+                        required
+                        minLength={2}
+                        maxLength={20}
+                    />
+                    <button type="submit" className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                        Start Game
+                    </button>
+                </form>
+            </div>
+        );
+    }
+
+    if (gameState === 'ready') {
+        return (
+            <div className="relative game-container">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-30">
+                    <div className="bg-white p-8 rounded-lg text-center max-w-md">
+                        <h2 className="text-2xl font-bold mb-4 text-black">How to Play</h2>
+                        <ul className="text-left space-y-2 mb-6 text-black">
+                            <li>🏃‍♂️ Run as far as possible</li>
+                            <li>🚧 Avoid obstacles by jumping</li>
+                            <li>⌨️ Press SPACE to jump (Desktop)</li>
+                            <li>📱 Tap screen to jump (Mobile)</li>
+                            <li>⭐ Unlock double jump at 500 points</li>
+                        </ul>
+                        <button
+                            onClick={startGame}
+                            className="px-6 py-3 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                        >
+                            Start Game
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="relative game-container">
+            <div className="absolute top-4 left-4 z-20 text-lg font-bold text-white text-shadow">
+                Player: {username}
+            </div>
+            <div className="absolute top-4 right-4 z-20 text-lg font-bold text-white text-shadow">
+                High Score: {highScore} | Score: {score}
+            </div>
+            
+            <Ground />
+            
+            <div 
+                ref={characterRef}
+                className={`character ${isJumping ? 'jumping' : ''}`}
+            >
+                <S3Image
+                    imageKey="baby-boy.png"
+                    alt="Baby Character"
+                    width={120}
+                    height={120}
+                />
+            </div>
+
+            {obstacles.map(obstacle => (
+                <div
+                    key={obstacle.id}
+                    id={`obstacle-${obstacle.id}`}
+                    className="obstacle"
+                    style={{ transform: `translateX(${obstacle.x}px)` }}
+                >
+                    <S3Image
+                        imageKey={`${obstacle.type}.png`}
+                        alt={obstacle.type}
+                        width={90}
+                        height={90}
+                    />
+                </div>
+            ))}
+
+            {gameState === 'gameover' && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                    <div className="bg-white p-8 rounded-lg text-center">
+                        <h2 className="text-2xl mb-4 text-black">Game Over!</h2>
+                        <p className="mb-4 text-black">Score: {score}</p>
+                        <button
+                            onClick={startGame}
+                            className="px-4 py-2 bg-blue-500 text-white rounded"
+                        >
+                            Play Again
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

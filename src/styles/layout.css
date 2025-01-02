@@ -1,0 +1,25 @@
+.game-container {
+    position: relative;
+    width: 800px;
+    height: 400px;
+    margin: 0 auto;
+    border: 2px solid #333;
+    overflow: hidden;
+}
+
+.character {
+    position: absolute;
+    bottom: 20px;
+    left: 50px;
+    z-index: 10
+}
+
+.obstacle {
+    position: absolute;
+    bottom: 20px;
+    z-index: 5
+}
+
+.text-shadow {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5)
+}
