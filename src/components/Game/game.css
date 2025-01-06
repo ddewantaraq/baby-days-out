@@ -1,0 +1,21 @@
+/* Initial state for obstacles and their animations */
+.obstacle {
+    position: absolute;
+    bottom: 20px;
+    visibility: hidden;
+    pointer-events: none;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    -webkit-transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0);
+}
+
+.obstacle img {
+    opacity: 0;
+    transform-origin: center center;
+    will-change: transform, opacity;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    backface-visibility: hidden;
+    display: block;
+}

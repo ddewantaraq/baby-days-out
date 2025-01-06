@@ -12,4 +12,5 @@ export interface Obstacle {
     type: ObstacleType;
     x: number;
     y: number;
+    animated: boolean;
 }

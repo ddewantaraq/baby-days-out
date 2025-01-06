@@ -5,6 +5,10 @@ import S3Image from '../S3Image';
 import Ground from '../Ground';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { GameState, ObstacleType, Obstacle } from '@/types/game';
+import { gsap } from 'gsap';
+import { setupGSAP } from './gsapConfig';
+
+import './game.css';
 
 const INITIAL_SPEED = 8;
 const SPEED_INCREMENT = 1.0; // Maximum speed increment for milestone achievements
@@ -177,13 +181,71 @@ export default function GameComponent() {
             return;
         }
 
-        // Update obstacle positions with current speed
+        // Update obstacle positions and handle animations
         setObstacles(prevObstacles => {
+            if (!characterRef.current) return prevObstacles;
+            
+            const currentSpeed = speedRef.current;
+            const characterRect = characterRef.current.getBoundingClientRect();
+            const characterRight = characterRect.right;
+            
             const updatedObstacles = prevObstacles
-                .map(obstacle => ({
-                    ...obstacle,
-                    x: obstacle.x - speedRef.current
-                }))
+                .map(obstacle => {
+                    const newX = obstacle.x - currentSpeed;
+                    
+                    // Check if obstacle needs to be animated
+                    if (!animatedObstacles.current.has(obstacle.id)) {
+                        const distanceToCharacter = obstacle.x - characterRight;
+                        const secondsUntilReach = distanceToCharacter / (currentSpeed * 60);
+                        
+                        if (secondsUntilReach <= 0.5 && secondsUntilReach >= 0.2) {
+                            const obstacleElement = document.getElementById(`obstacle-${obstacle.id}`);
+                            if (obstacleElement) {
+                                const imageElement = obstacleElement.querySelector('img');
+                                if (imageElement) {
+                                    // Kill any existing animations
+                                    gsap.killTweensOf(imageElement);
+                                    
+                                    // Show immediately
+                                    gsap.set(obstacleElement, { 
+                                        visibility: 'visible',
+                                        immediateRender: true
+                                    });
+                                    
+                                    // Animate with GSAP
+                                    gsap.fromTo(imageElement,
+                                        {
+                                            opacity: 0,
+                                            scale: 0.5,
+                                            y: 15,
+                                            filter: 'blur(4px)',
+                                            immediateRender: true
+                                        },
+                                        {
+                                            opacity: 1,
+                                            scale: 1,
+                                            y: 0,
+                                            filter: 'none',
+                                            duration: 0.25,
+                                            ease: "back.out(2)",
+                                            clearProps: "transform,filter",
+                                            onStart: () => {
+                                                if (animatedObstacles.current) {
+                                                    animatedObstacles.current.add(obstacle.id);
+                                                }
+                                            }
+                                        }
+                                    );
+                                }
+                            }
+                        }
+                    }
+                    
+                    return {
+                        ...obstacle,
+                        x: newX
+                    };
+                })
                 .filter(obstacle => obstacle.x > -100);
             
             // Keep ref in sync with state
@@ -211,12 +273,33 @@ export default function GameComponent() {
                     return prev;
                 }
 
+                const newId = Date.now();
                 const newObstacles = [...prev, {
-                    id: Date.now(),
+                    id: newId,
                     type: obstacleType,
                     x: window.innerWidth + 300, // Give more time to react
-                    y: 10 // Adjust to align with ground
+                    y: 10, // Adjust to align with ground
+                    animated: true // Track animation state
                 }];
+                
+                // Set initial state for new obstacles
+                const obstacleElement = document.getElementById(`obstacle-${newId}`);
+                if (obstacleElement) {
+                    const imageElement = obstacleElement.querySelector('img');
+                    if (imageElement) {
+                        gsap.set(imageElement, {
+                            opacity: 0,
+                            scale: 0.5,
+                            y: 20,
+                            filter: 'blur(4px)',
+                            force3D: true,
+                            transformOrigin: 'center center'
+                        });
+                    }
+                    gsap.set(obstacleElement, {
+                        visibility: 'hidden'
+                    });
+                }
                 
                 // Keep ref in sync with state
                 obstaclesRef.current = newObstacles;
@@ -260,7 +343,8 @@ export default function GameComponent() {
             id: Date.now(),
             type: Math.random() < 0.5 ? ObstacleType.NORMAL_CAT : ObstacleType.NORMAL_DOG,
             x: window.innerWidth + 300, // Give more initial distance
-            y: 10 // Adjust to align with ground
+            y: 10, // Adjust to align with ground,
+            animated: true
         };
         
         // Reset game state and refs
@@ -279,10 +363,26 @@ export default function GameComponent() {
         });
     }, []);
 
+    // Sync obstacles ref with state
+    useEffect(() => {
+        obstaclesRef.current = obstacles;
+    }, [obstacles]);
+
     // Initialize game loop reference - moved higher up to fix dependency issue
     useEffect(() => {
+        setupGSAP();
         gameLoopFuncRef.current = gameLoop;
     }, [gameLoop, startGame, checkCollisions, gameOver]);
+
+    // Animation state tracking without using React state
+    const animatedObstacles = useRef(new Set<number>());
+
+    // Reset animation state when game restarts
+    useEffect(() => {
+        if (gameState === 'playing') {
+            animatedObstacles.current.clear();
+        }
+    }, [gameState]);
 
     
 
