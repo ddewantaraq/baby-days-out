@@ -71,3 +71,21 @@
 .ground {
     animation: scrollGround 20s linear infinite
 }
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.floating-cloud {
+    animation: float 6s ease-in-out infinite;
+}
