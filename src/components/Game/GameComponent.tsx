@@ -20,7 +20,6 @@ export default function GameComponent() {
     const [gameState, setGameState] = useState<GameState>('idle');
     const [score, setScore] = useState(0);
     const scoreRef = useRef(0);
-    const [speed, setSpeed] = useState(INITIAL_SPEED);
     const speedRef = useRef(INITIAL_SPEED);
     const [obstacles, setObstacles] = useState<Obstacle[]>([]);
     const obstaclesRef = useRef<Obstacle[]>([]);
@@ -49,7 +48,7 @@ export default function GameComponent() {
                 character.classList.remove('jumping', 'double-jumping');
             }
         };
-    }, []);
+    }, [username]);
 
     const handleUsernameSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -69,16 +68,16 @@ export default function GameComponent() {
         const characterLeft = characterRect.left + window.scrollX;
         const characterTop = characterRect.top + window.scrollY;
         
-        // More generous collision boxes (1/3 smaller than visual size)
-        const CHARACTER_WIDTH = 80;   // Visual width is 120px
-        const CHARACTER_HEIGHT = 80;  // Visual height is 120px
+        // Collision boxes matching new visual size
+        const CHARACTER_WIDTH = 80;   // Visual width is 80px
+        const CHARACTER_HEIGHT = 80;  // Visual height is 80px
         
-        // Define character collision box with buffer space
+        // Define character collision box with adjusted buffer for new dimensions
         const characterBox = {
-            left: characterLeft + 20,     // Add buffer from sides
-            right: characterLeft + CHARACTER_WIDTH - 20,
-            top: characterTop + 20,       // Add buffer from top/bottom
-            bottom: characterTop + CHARACTER_HEIGHT - 20
+            left: characterLeft + 15,     // Add buffer from sides
+            right: characterLeft + CHARACTER_WIDTH - 15,
+            top: characterTop + 15,       // Add buffer from top/bottom
+            bottom: characterTop + CHARACTER_HEIGHT - 15
         };
 
         // Check each obstacle
@@ -88,12 +87,12 @@ export default function GameComponent() {
 
             const obstacleRect = obstacleElement.getBoundingClientRect();
             
-            // Define obstacle collision box with buffer space
+            // Define obstacle collision box with adjusted buffer for new dimensions
             const obstacleBox = {
-                left: obstacleRect.left + 15,    // Add buffer from sides
-                right: obstacleRect.right - 15,
-                top: obstacleRect.top + 15,      // Add buffer from top/bottom
-                bottom: obstacleRect.bottom - 15
+                left: obstacleRect.left + 10,    // Add buffer from sides
+                right: obstacleRect.right - 10,
+                top: obstacleRect.top + 10,      // Add buffer from top/bottom
+                bottom: obstacleRect.bottom - 10
             };
             
             // Simple AABB collision with larger tolerance
@@ -215,8 +214,8 @@ export default function GameComponent() {
                 const newObstacles = [...prev, {
                     id: Date.now(),
                     type: obstacleType,
-                    x: window.innerWidth,
-                    y: 0
+                    x: window.innerWidth + 300, // Give more time to react
+                    y: 10 // Adjust to align with ground
                 }];
                 
                 // Keep ref in sync with state
@@ -237,7 +236,6 @@ export default function GameComponent() {
             const speedIncrease = (newScore % SPEED_MILESTONE === 0) ? SPEED_INCREMENT : SPEED_INCREMENT * 0.5;
             const newSpeed = speedRef.current + speedIncrease;
             speedRef.current = newSpeed;
-            setSpeed(newSpeed);
         }
 
         gameLoopRef.current = requestAnimationFrame(gameLoop);
@@ -253,7 +251,6 @@ export default function GameComponent() {
         setGameState('playing');
         setScore(0);
         scoreRef.current = 0;
-        setSpeed(INITIAL_SPEED);
         speedRef.current = INITIAL_SPEED;
         setIsJumping(false);
         setCanDoubleJump(false);
@@ -262,8 +259,8 @@ export default function GameComponent() {
         const initialObstacle = {
             id: Date.now(),
             type: Math.random() < 0.5 ? ObstacleType.NORMAL_CAT : ObstacleType.NORMAL_DOG,
-            x: window.innerWidth,
-            y: 0
+            x: window.innerWidth + 300, // Give more initial distance
+            y: 10 // Adjust to align with ground
         };
         
         // Reset game state and refs
@@ -392,8 +389,9 @@ export default function GameComponent() {
                 <S3Image
                     imageKey="baby-boy.png"
                     alt="Baby Character"
-                    width={120}
-                    height={120}
+                    width={80}
+                    height={80}
+                    style={{ marginBottom: '20px' }}
                 />
             </div>
 
@@ -407,8 +405,8 @@ export default function GameComponent() {
                     <S3Image
                         imageKey={`${obstacle.type}.png`}
                         alt={obstacle.type}
-                        width={90}
-                        height={90}
+                        width={60}
+                        height={80}
                     />
                 </div>
             ))}

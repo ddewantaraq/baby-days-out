@@ -12,28 +12,32 @@ interface S3ImageProps {
   style?: React.CSSProperties;
 }
 
-export default function S3Image({ imageKey, alt, width, height, className }: S3ImageProps) {
+export default function S3Image({ imageKey, alt, width, height, className, style }: S3ImageProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchSignedUrl = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch(`/api/s3?key=${encodeURIComponent(imageKey)}`);
         const data = await response.json();
         
         if (data.url) {
           setImageUrl(data.url);
+          setIsLoading(false);
         }
       } catch (error) {
         console.error('Error fetching signed URL:', error);
+        setIsLoading(false);
       }
     };
 
     fetchSignedUrl();
   }, [imageKey]);
 
-  if (!imageUrl) {
-    return <div>Loading...</div>;
+  if (isLoading || !imageUrl) {
+    return <div className="animate-pulse bg-gray-200" style={{ width, height }}></div>;
   }
 
   return (
@@ -43,6 +47,7 @@ export default function S3Image({ imageKey, alt, width, height, className }: S3I
       width={width}
       height={height}
       className={className}
+      style={style}
     />
   );
 }

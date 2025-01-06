@@ -25,7 +25,7 @@ const Ground = () => {
         bottom: 0,
         left: 0,
         width: '200%',
-        height: '128px',
+        height: '20px',
         zIndex: 1,
         display: 'flex',
         overflow: 'hidden',
@@ -40,7 +40,7 @@ const Ground = () => {
             imageKey="tiles-1.png"
             alt="ground tile"
             width={128}
-            height={128}
+            height={20}
             style={{
                 flexShrink: 0,
                 objectFit: 'none',

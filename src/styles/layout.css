@@ -9,15 +9,16 @@
 
 .character {
     position: absolute;
-    bottom: 20px;
+    bottom: -2px;
     left: 50px;
     z-index: 10
 }
 
 .obstacle {
     position: absolute;
-    bottom: 20px;
-    z-index: 5
+    bottom: 0;
+    z-index: 1;
+    animation: obstacleAppear 0.3s forwards;
 }
 
 .text-shadow {

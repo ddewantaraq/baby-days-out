@@ -49,6 +49,17 @@
     }
 }
 
+@keyframes obstacleAppear {
+    0% {
+        bottom: 0;
+        z-index: 1;
+    }
+    100% {
+        bottom: 20px;
+        z-index: 5;
+    }
+}
+
 .character.jumping {
     animation: jump 0.5s ease-out
 }
