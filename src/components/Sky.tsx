@@ -110,10 +110,10 @@ const Bird: React.FC<{ speed: number; height: number }> = ({
           pointerEvents: "none",
         }} />*/}
       <Image
-        src={"/tiles.jpeg"}
+        src={"/dove.png"}
         alt="bird"
-        width={100}
-        height={100}
+        width={32}
+        height={32}
         style={{
           pointerEvents: "none",
         }}
@@ -213,11 +213,11 @@ const Sky: React.FC = () => {
         <Cloud key={index} {...cloud} />
       ))}
 
-      <Bird speed={0.1} height={40} />
+      <Bird speed={0.1} height={25} />
       <Bird speed={0.15} height={30} />
-      <Bird speed={0.2} height={45} />
-      <Bird speed={0.1} height={40} />
-      <Bird speed={0.15} height={50} />
+      <Bird speed={0.2} height={37} />
+      <Bird speed={0.17} height={40} />
+      <Bird speed={0.12} height={35} />
     </div>
   );
 };
