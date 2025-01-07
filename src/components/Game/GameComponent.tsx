@@ -261,13 +261,16 @@ export default function GameComponent() {
       return updatedObstacles;
     });
 
-    // Calculate current spawn interval with even more aggressive scaling after milestones
+    // Calculate current spawn interval with more varied distances after 500 points
     const milestonesPassed = Math.floor(scoreRef.current / SPEED_MILESTONE);
+    const baseInterval = BASE_OBSTACLE_SPAWN_INTERVAL - milestonesPassed * 300;
+    
+    // Add random variation to spawn intervals after 500 points
+    const randomVariation = scoreRef.current >= 1000 ? (Math.random() * 400 - 200) : 0;
+    
     const currentSpawnInterval = Math.max(
       MIN_OBSTACLE_SPAWN_INTERVAL,
-      BASE_OBSTACLE_SPAWN_INTERVAL -
-        milestonesPassed * 300 -
-        Math.floor(scoreRef.current / 50) * 50
+      baseInterval + randomVariation - Math.floor(scoreRef.current / 50) * 30
     );
 
     // Spawn new obstacles
@@ -481,7 +484,6 @@ export default function GameComponent() {
               <li>🚧 Avoid obstacles by jumping</li>
               <li>⌨️ Press SPACE to jump (Desktop)</li>
               <li>📱 Tap screen to jump (Mobile)</li>
-              <li>⭐ Unlock double jump at 500 points</li>
             </ul>
             <button
               onClick={startGame}
