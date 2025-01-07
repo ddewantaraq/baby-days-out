@@ -45,22 +45,9 @@ const Cloud: React.FC<CloudProps> = ({
         transition: "left 50ms linear",
       }}
     >
-      {/* 
-        use S3Image element if image already uploaded on s3 and remove image element
-        */}
-      {/* <S3Image
-        imageKey="cloud.png"
+      <S3Image
+        imageKey="clouds.png"
         alt="cloud"
-        width={128}
-        height={71}
-        style={{
-          pointerEvents: "none",
-        }}
-      /> */}
-
-      <Image
-        src={"/clouds.png"}
-        alt="clouds"
         width={128}
         height={71}
         style={{
