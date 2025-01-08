@@ -36,32 +36,18 @@ const Ground = () => {
 
   // Create two sets of tiles for seamless infinite scrolling
   const tiles = [...Array(Math.ceil(tileCount / 2))].map((_, index) => (
-    // <S3Image
-    //     key={`tile1-${index}`}
-    //     imageKey="tiles-1.png"
-    //     alt="ground tile"
-    //     width={128}
-    //     height={20}
-    //     style={{
-    //         flexShrink: 0,
-    //         objectFit: 'none',
-    //         imageRendering: 'pixelated',
-    //         pointerEvents: 'none'
-    //     }}
-    // />
-
-    <Image
-      key={`tiles-${index}`}
-      src={"/tiles1.png"}
-      alt="ground tile"
-      width={130}
-      height={20}
-      style={{
-        flexShrink: 0,
-        objectFit: "none",
-        imageRendering: "pixelated",
-        pointerEvents: "none",
-      }}
+    <S3Image
+        key={`tile1-${index}`}
+        imageKey="tiles1.png"
+        alt="ground tile"
+        width={128}
+        height={20}
+        style={{
+            flexShrink: 0,
+            objectFit: 'none',
+            imageRendering: 'pixelated',
+            pointerEvents: 'none'
+        }}
     />
   ));
 

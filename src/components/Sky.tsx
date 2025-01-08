@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import S3Image from "./S3Image";
-import Image from "next/image";
 
 interface CloudProps {
   speed: number;
@@ -85,26 +84,14 @@ const Bird: React.FC<{ speed: number; height: number }> = ({
         transform: "scale(0.5)",
       }}
     >
-      {/* 
-        use S3Image element if image already uploaded on s3 and remove image element
-        */}
-      {/* <S3Image
-        imageKey="bird.png"
-        alt="bird"
+      <S3Image
+        imageKey="dove.png"
+        alt="dove"
         width={32}
         height={32}
         style={{
           pointerEvents: "none",
-        }} />*/}
-      <Image
-        src={"/dove.png"}
-        alt="bird"
-        width={32}
-        height={32}
-        style={{
-          pointerEvents: "none",
-        }}
-      />
+        }} />
     </div>
   );
 };
