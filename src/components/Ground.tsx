@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import S3Image from "./S3Image";
-import Image from "next/image";
 
 const Ground = () => {
   const [tileCount, setTileCount] = useState(12);

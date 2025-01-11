@@ -9,6 +9,8 @@ import { gsap } from "gsap";
 import { setupGSAP } from "./gsapConfig";
 import { audioManager } from "../music/AudioManager";
 import CountdownOverlay from "./CountdownOverlay";
+import WelcomeComponent from "./WelcomeComponent";
+import ReadyComponent from "./ReadyComponent";
 
 import "./game.css";
 import Sky from "../Sky";
@@ -472,54 +474,11 @@ export default function GameComponent() {
   }, []);
 
   if (!username) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full p-8">
-        <h1 className="text-3xl font-bold mb-8 text-black">
-          Baby Running Game
-        </h1>
-        <form onSubmit={handleUsernameSubmit} className="space-y-4">
-          <input
-            type="text"
-            name="username"
-            placeholder="Enter your username"
-            className="px-4 py-2 border rounded w-full"
-            required
-            minLength={2}
-            maxLength={20}
-          />
-          <button
-            type="submit"
-            className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-          >
-            Start Game
-          </button>
-        </form>
-      </div>
-    );
+    return <WelcomeComponent onUsernameSubmit={handleUsernameSubmit} />;
   }
 
   if (gameState === "ready") {
-    return (
-      <div className="relative game-container">
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-30">
-          <div className="bg-white p-8 rounded-lg text-center max-w-md">
-            <h2 className="text-2xl font-bold mb-4 text-black">How to Play</h2>
-            <ul className="text-left space-y-2 mb-6 text-black">
-              <li>🏃‍♂️ Run as far as possible</li>
-              <li>🚧 Avoid obstacles by jumping</li>
-              <li>⌨️ Press SPACE to jump (Desktop)</li>
-              <li>📱 Tap screen to jump (Mobile)</li>
-            </ul>
-            <button
-              onClick={startGame}
-              className="px-6 py-3 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-            >
-              Start Game
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <ReadyComponent onStartGame={startGame} />;
   }
 
   return (
