@@ -1,4 +1,4 @@
-export type GameState = 'idle' | 'ready' | 'playing' | 'gameover';
+export type GameState = 'idle' | 'ready' | 'playing' | 'gameover' | 'countdown';
 
 export enum ObstacleType {
   NORMAL_CAT = "cat",
