@@ -8,6 +8,7 @@ import { GameState, ObstacleType, Obstacle } from "@/types/game";
 import { gsap } from "gsap";
 import { setupGSAP } from "./gsapConfig";
 import { audioManager } from "../music/AudioManager";
+import CountdownOverlay from "./CountdownOverlay";
 
 import "./game.css";
 import Sky from "../Sky";
@@ -354,23 +355,23 @@ export default function GameComponent() {
   }, [checkCollisions, gameOver]);
 
   const startGame = useCallback(() => {
+    // Ensure all audio is loaded before starting
+    if (!audioManager.isInitialized()) {
+      audioManager.preloadAudio();
+    }
+
     console.log("Starting game..."); // Debug log
     if (gameLoopRef.current) {
       cancelAnimationFrame(gameLoopRef.current);
     }
 
-    console.log("clicked");
     // Reset all game state
-    setGameState("playing");
+    setGameState("countdown");
     setScore(0);
     scoreRef.current = 0;
     speedRef.current = INITIAL_SPEED;
     setIsJumping(false);
     setCanDoubleJump(false);
-
-    setTimeout(() => {
-      audioManager.playBackgroundMusic();
-    }, 600);
 
     // Initialize with one obstacle to start
     const initialObstacle = {
@@ -386,16 +387,12 @@ export default function GameComponent() {
     lastObstacleSpawnRef.current = Date.now();
     lastFrameTime.current = Date.now();
 
-    // Update both state and ref atomically
+    // Clear existing obstacles and set initial one
     obstaclesRef.current = [initialObstacle];
     setObstacles([initialObstacle]);
 
-    // Start game loop in next frame to ensure state is updated
-    requestAnimationFrame(() => {
-      if (gameLoopFuncRef.current) {
-        gameLoopRef.current = requestAnimationFrame(gameLoopFuncRef.current);
-      }
-    });
+    // Don't start the game loop yet - wait for countdown to complete
+    // Game loop will be started by the CountdownOverlay's onComplete callback
   }, []);
 
   // Sync obstacles ref with state
@@ -448,8 +445,8 @@ export default function GameComponent() {
       }
     };
 
-    window.addEventListener("keydown", handleKeyPress);
-    window.addEventListener("touchstart", handleTouchStart);
+    window.addEventListener("keydown", handleKeyPress, { passive: false });
+    window.addEventListener("touchstart", handleTouchStart, { passive: false });
 
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
@@ -536,6 +533,19 @@ export default function GameComponent() {
       <Sky />
 
       <Ground />
+
+      {gameState === "countdown" && (
+        <CountdownOverlay
+          onComplete={() => {
+            setGameState("playing");
+            audioManager.playBackgroundMusic();
+            // Start game loop here after countdown completes
+            if (gameLoopFuncRef.current) {
+              gameLoopRef.current = requestAnimationFrame(gameLoopFuncRef.current);
+            }
+          }}
+        />
+      )}
 
       <div
         ref={characterRef}
