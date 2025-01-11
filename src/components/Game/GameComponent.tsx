@@ -541,7 +541,9 @@ export default function GameComponent() {
             audioManager.playBackgroundMusic();
             // Start game loop here after countdown completes
             if (gameLoopFuncRef.current) {
-              gameLoopRef.current = requestAnimationFrame(gameLoopFuncRef.current);
+              gameLoopRef.current = requestAnimationFrame(
+                gameLoopFuncRef.current
+              );
             }
           }}
         />
@@ -570,8 +572,8 @@ export default function GameComponent() {
           <S3Image
             imageKey={`${obstacle.type}.png`}
             alt={obstacle.type}
-            width={60}
-            height={80}
+            width={65}
+            height={65}
           />
         </div>
       ))}

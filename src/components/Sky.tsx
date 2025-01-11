@@ -47,8 +47,8 @@ const Cloud: React.FC<CloudProps> = ({
       <S3Image
         imageKey="clouds.png"
         alt="cloud"
-        width={128}
-        height={71}
+        width={100}
+        height={100}
         style={{
           pointerEvents: "none",
         }}
@@ -91,7 +91,8 @@ const Bird: React.FC<{ speed: number; height: number }> = ({
         height={32}
         style={{
           pointerEvents: "none",
-        }} />
+        }}
+      />
     </div>
   );
 };
