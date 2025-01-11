@@ -56,14 +56,16 @@ export default function Home() {
           </div>
         )}
 
-        {isGameStarted && (
-          <div className="w-full max-w-lg mx-auto">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-              Game Started!
-            </h2>
-            <GameComponent />
-          </div>
-        )}
+{isGameStarted && (
+  <div
+    className="w-full max-w-4xl mx-auto"
+    style={{ height: '500px' }} 
+  >
+    <h2 className="text-2xl font-semibold text-gray-700 mb-4">Game Started!</h2>
+
+    <GameComponent />
+  </div>
+)}
       </main>
 
       <div className="absolute bottom-10 left-10 text-3xl text-yellow-400 opacity-70 animate-pulse">
