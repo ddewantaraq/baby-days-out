@@ -25,7 +25,7 @@ export default function Home() {
 
       <main className="w-full max-w-3xl mx-auto text-center py-8 px-4 z-10">
         <h1 className="text-5xl font-extrabold text-yellow-600 mb-4 flex items-center justify-center animate-bounce">
-          <span className="mr-2 text-6xl">🌞</span> Baby Running Game{" "}
+          <span className="mr-2 text-6xl">🍼</span> Baby Running Game{" "}
           <span className="ml-2 text-6xl">👶</span>
         </h1>
         <p
@@ -67,6 +67,14 @@ export default function Home() {
       </main>
 
       <div className="absolute bottom-10 left-10 text-3xl text-yellow-400 opacity-70 animate-pulse">
+        <span role="img" aria-label="cloud">
+          ☁️
+        </span>
+        <span role="img" aria-label="sun">
+          🌞
+        </span>
+      </div>
+      <div className="absolute bottom-10 right-10 text-3xl text-yellow-400 opacity-70 animate-pulse">
         <span role="img" aria-label="cloud">
           ☁️
         </span>
