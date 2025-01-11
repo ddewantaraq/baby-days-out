@@ -11,12 +11,13 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        primary: "#FF6347", 
-      },
-      fontFamily: {
-        sans: ['Roboto', 'Poppins', 'sans-serif'], 
+        "baby-blue": "#87CEFA",
+        "baby-pink": "#FFB6C1",
+        "sunny-yellow": "#FFEB3B",
+        "playful-green": "#66BB6A",
       },
     },
   },
+  
   plugins: [],
 } satisfies Config;
