@@ -4,9 +4,9 @@ class AudioManager {
   private gameOverSound: HTMLAudioElement;
 
   constructor() {
-    this.backgroundMusic = new Audio("/sounds/gameplay.m4a");
+    this.backgroundMusic = new Audio("/sounds/gamemusic.mp3");
     this.jumpSound = new Audio("/sounds/jump.mp3");
-    this.gameOverSound = new Audio("/sounds/gameover.m4a");
+    this.gameOverSound = new Audio("/sounds/gamefail.mp3");
 
     // Configure background music
     this.backgroundMusic.loop = true;
