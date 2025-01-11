@@ -482,7 +482,7 @@ export default function GameComponent() {
             type="text"
             name="username"
             placeholder="Enter your username"
-            className="px-4 py-2 border rounded"
+            className="px-4 py-2 border rounded w-full"
             required
             minLength={2}
             maxLength={20}
