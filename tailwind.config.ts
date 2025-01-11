@@ -14,7 +14,7 @@ export default {
         primary: "#FF6347", 
       },
       fontFamily: {
-        sans: ['Roboto', 'Poppins', 'sans-serif'],
+        sans: ['var(--font-jersey15)'],
         jersey: ['var(--font-jersey15)'],
       },
     },
