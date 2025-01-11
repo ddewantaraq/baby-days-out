@@ -25,8 +25,8 @@ export default function Home() {
 
       <main className="w-full max-w-3xl mx-auto text-center py-8 px-4 z-10">
         <h1 className="text-5xl font-extrabold text-yellow-600 mb-4 flex items-center justify-center animate-bounce">
-          <span className="mr-2 text-6xl">🍼</span> Baby Running Game{" "}
-          <span className="ml-2 text-6xl">👶</span>
+          <span className="mr-2 text-6xl">👶</span> Baby Running Game{" "}
+          <span className="ml-2 text-6xl">🍼</span>
         </h1>
         <p
           className="text-2xl font-bold text-yellow-800 italic mb-6"
