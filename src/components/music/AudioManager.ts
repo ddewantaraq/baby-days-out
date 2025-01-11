@@ -1,30 +1,27 @@
 class AudioManager {
-  private backgroundMusic: HTMLAudioElement;
-  private jumpSound: HTMLAudioElement;
-  private gameOverSound: HTMLAudioElement;
+  private backgroundMusic: HTMLAudioElement | null = null;
+  private jumpSound: HTMLAudioElement | null = null;
+  private gameOverSound: HTMLAudioElement | null = null;
+  private initialized: boolean = false;
 
   constructor() {
-    this.backgroundMusic = new Audio("/sounds/gamemusic.mp3");
-    this.jumpSound = new Audio("/sounds/jump.mp3");
-    this.gameOverSound = new Audio("/sounds/gamefail.mp3");
-
-    // Configure background music
-    this.backgroundMusic.loop = true;
-    this.backgroundMusic.volume = 0.5; // Adjust volume as needed
+    // Defer audio initialization until preloadAudio is called
   }
 
   playBackgroundMusic() {
-    this.backgroundMusic
-      .play()
+    if (!this.backgroundMusic || !this.initialized) return;
+    this.backgroundMusic.play()
       .catch((error) => console.log("Audio play failed:", error));
   }
 
   stopBackgroundMusic() {
+    if (!this.backgroundMusic || !this.initialized) return;
     this.backgroundMusic.pause();
     this.backgroundMusic.currentTime = 0;
   }
 
   playJumpSound() {
+    if (!this.jumpSound || !this.initialized) return;
     this.jumpSound.currentTime = 0; // Reset sound to start
     this.jumpSound
       .play()
@@ -32,6 +29,7 @@ class AudioManager {
   }
 
   playGameOverSound() {
+    if (!this.gameOverSound || !this.initialized) return;
     this.gameOverSound
       .play()
       .catch((error) => console.log("Audio play failed:", error));
@@ -39,24 +37,47 @@ class AudioManager {
   }
 
   setMuted(muted: boolean) {
+    if (!this.initialized) return;
     const volume = muted ? 0 : 0.5;
-    this.backgroundMusic.volume = volume;
-    this.jumpSound.volume = volume;
-    this.gameOverSound.volume = volume;
+    if (this.backgroundMusic) this.backgroundMusic.volume = volume;
+    if (this.jumpSound) this.jumpSound.volume = volume;
+    if (this.gameOverSound) this.gameOverSound.volume = volume;
   }
 
   async preloadAudio() {
+    if (this.initialized) return;
+    
     try {
+      const [backgroundUrl, jumpUrl, gameOverUrl] = await Promise.all([
+        loadAudioFromS3('gamemusic.mp3'),
+        loadAudioFromS3('jump.mp3'),
+        loadAudioFromS3('gamefail.mp3')
+      ]);
+
+      this.backgroundMusic = new Audio(backgroundUrl);
+      this.backgroundMusic.loop = true;
+      this.backgroundMusic.volume = 0.5;
+      this.jumpSound = new Audio(jumpUrl);
+      this.gameOverSound = new Audio(gameOverUrl);
+
       await Promise.all([
         this.backgroundMusic.load(),
         this.jumpSound.load(),
         this.gameOverSound.load(),
       ]);
+
+      this.initialized = true;
       console.log("Audio files preloaded successfully");
     } catch (error) {
       console.error("Error preloading audio:", error);
     }
   }
+
+  isInitialized() {
+    return this.initialized;
+  }
 }
+
+import { loadAudioFromS3 } from './s3AudioLoader';
 
 export const audioManager = new AudioManager();
