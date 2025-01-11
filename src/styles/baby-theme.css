@@ -1,0 +1,60 @@
+:root {
+  --baby-primary: #FF9ECD;
+  --baby-secondary: #87CEEB;
+  --baby-accent: #FFD700;
+  --baby-text: #4A4A4A;
+  --baby-background: #FFF5F9;
+}
+
+.baby-title {
+  font-family: var(--font-jersey15);
+  color: var(--baby-text);
+  font-size: 3.5rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.baby-input {
+  font-family: var(--font-jersey15);
+  background-color: white;
+  border: 3px solid var(--baby-primary);
+  border-radius: 15px;
+  padding: 1rem;
+  font-size: 1.2rem;
+  width: 100%;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.baby-input:focus {
+  outline: none;
+  border-color: var(--baby-accent);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3);
+}
+
+.baby-button {
+  font-family: var(--font-jersey15);
+  background-color: var(--baby-primary);
+  color: white;
+  border: none;
+  border-radius: 15px;
+  padding: 1rem 2rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.baby-button:hover {
+  background-color: var(--baby-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.welcome-container {
+  background-color: var(--baby-background);
+  border-radius: 25px;
+  padding: 2rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}

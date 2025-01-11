@@ -1,4 +1,11 @@
 @tailwind base;
+
+@layer base {
+  html {
+    font-family: var(--font-jersey15);
+    background-color: var(--baby-background);
+  }
+}
 @import './game.css';
 @tailwind components;
 @tailwind utilities;
@@ -22,5 +29,5 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-jersey15);
 }
