@@ -7,6 +7,7 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { GameState, ObstacleType, Obstacle } from "@/types/game";
 import { gsap } from "gsap";
 import { setupGSAP } from "./gsapConfig";
+import { audioManager } from "../music/AudioManager";
 
 import "./game.css";
 import Sky from "../Sky";
@@ -122,6 +123,7 @@ export default function GameComponent() {
   const jump = useCallback(() => {
     if (!isJumping) {
       setIsJumping(true);
+      audioManager.playJumpSound();
       if (characterRef.current) {
         characterRef.current.classList.add("jumping");
         setTimeout(() => {
@@ -139,6 +141,7 @@ export default function GameComponent() {
       }, 600);
     } else if (canDoubleJump && score >= DOUBLE_JUMP_MILESTONE) {
       const characterElement = characterRef.current;
+      audioManager.playJumpSound();
       if (characterElement) {
         characterElement.style.animation = "none";
         characterElement.offsetHeight; // Trigger reflow
@@ -160,6 +163,8 @@ export default function GameComponent() {
     }
     setScore(finalScore); // Update the score state with the final score
     setGameState("gameover");
+    audioManager.stopBackgroundMusic();
+    audioManager.playGameOverSound();
     if (gameLoopRef.current) {
       cancelAnimationFrame(gameLoopRef.current);
     }
@@ -264,10 +269,11 @@ export default function GameComponent() {
     // Calculate current spawn interval with more varied distances after 500 points
     const milestonesPassed = Math.floor(scoreRef.current / SPEED_MILESTONE);
     const baseInterval = BASE_OBSTACLE_SPAWN_INTERVAL - milestonesPassed * 300;
-    
+
     // Add random variation to spawn intervals after 500 points
-    const randomVariation = scoreRef.current >= 1000 ? (Math.random() * 400 - 200) : 0;
-    
+    const randomVariation =
+      scoreRef.current >= 1000 ? Math.random() * 400 - 200 : 0;
+
     const currentSpawnInterval = Math.max(
       MIN_OBSTACLE_SPAWN_INTERVAL,
       baseInterval + randomVariation - Math.floor(scoreRef.current / 50) * 30
@@ -353,6 +359,7 @@ export default function GameComponent() {
       cancelAnimationFrame(gameLoopRef.current);
     }
 
+    console.log("clicked");
     // Reset all game state
     setGameState("playing");
     setScore(0);
@@ -360,6 +367,10 @@ export default function GameComponent() {
     speedRef.current = INITIAL_SPEED;
     setIsJumping(false);
     setCanDoubleJump(false);
+
+    setTimeout(() => {
+      audioManager.playBackgroundMusic();
+    }, 600);
 
     // Initialize with one obstacle to start
     const initialObstacle = {
@@ -446,6 +457,23 @@ export default function GameComponent() {
     };
   }, [gameState, jump, startGame]);
 
+  //handle browser autoplay restriction
+  useEffect(() => {
+    const handleUserInteraction = () => {
+      audioManager.preloadAudio();
+      document.removeEventListener("click", handleUserInteraction);
+      document.removeEventListener("keydown", handleUserInteraction);
+    };
+
+    document.addEventListener("click", handleUserInteraction);
+    document.addEventListener("keydown", handleUserInteraction);
+
+    return () => {
+      document.removeEventListener("click", handleUserInteraction);
+      document.removeEventListener("keydown", handleUserInteraction);
+    };
+  }, []);
+
   if (!username) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8">
@@ -505,7 +533,6 @@ export default function GameComponent() {
       <div className="absolute top-4 right-4 z-20 text-lg font-bold text-white text-shadow">
         High Score: {highScore} | Score: {score}
       </div>
-
       <Sky />
 
       <Ground />
