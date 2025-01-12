@@ -48,11 +48,11 @@ export default function GameComponent() {
     } else {
       setGameState("idle");
     }
+    const character = characterRef.current;
     return () => {
       if (gameLoopRef.current) {
         cancelAnimationFrame(gameLoopRef.current);
       }
-      const character = characterRef.current;
       if (character) {
         character.classList.remove("jumping", "double-jumping");
       }
@@ -147,7 +147,7 @@ export default function GameComponent() {
       audioManager.playJumpSound();
       if (characterElement) {
         characterElement.style.animation = "none";
-        characterElement.offsetHeight; // Trigger reflow
+        //characterElement.offsetHeight; // Trigger reflow
         characterElement.style.animation = "";
         characterElement.classList.remove("jumping");
         characterElement.classList.add("double-jumping");
@@ -171,6 +171,7 @@ export default function GameComponent() {
     if (gameLoopRef.current) {
       cancelAnimationFrame(gameLoopRef.current);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highScore]);
 
   // Game loop definition

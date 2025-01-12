@@ -28,7 +28,7 @@ export default function WelcomeComponent({ onUsernameSubmit }: WelcomeComponentP
             type="submit"
             className="baby-button w-full"
           >
-            Let's Play! 🎈
+            Let&apos;s Play! 🎈
           </button>
         </form>
       </div>
