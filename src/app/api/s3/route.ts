@@ -22,8 +22,14 @@ export async function GET(request: Request) {
       );
     }
 
+    // Check if S3_BUCKET environment variable is set
+    const bucket = process.env.S3_BUCKET;
+    if (!bucket) {
+      throw new Error('S3_BUCKET environment variable is not set');
+    }
+
     const command = new GetObjectCommand({
-      Bucket: process.env.S3_BUCKET,
+      Bucket: bucket,
       Key: key,
     });
 
