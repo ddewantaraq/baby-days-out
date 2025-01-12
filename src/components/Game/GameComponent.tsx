@@ -439,8 +439,7 @@ export default function GameComponent() {
       }
     };
 
-    const handleTouchStart = (event: TouchEvent) => {
-      event.preventDefault();
+    const handleTouchStart = () => {
       if (gameState === "ready") {
         startGame();
       } else if (gameState === "playing") {
@@ -449,7 +448,7 @@ export default function GameComponent() {
     };
 
     window.addEventListener("keydown", handleKeyPress, { passive: false });
-    window.addEventListener("touchstart", handleTouchStart, { passive: false });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
 
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
@@ -539,7 +538,7 @@ export default function GameComponent() {
       ))}
 
       {gameState === "gameover" && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50" style={{zIndex: 99}}>
           <div className="bg-white p-8 rounded-lg text-center">
             <h2 className="text-2xl mb-4 text-black">Game Over!</h2>
             <p className="mb-4 text-black">Score: {score}</p>
