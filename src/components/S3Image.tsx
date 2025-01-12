@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import AssetLoader from './AssetLoader';
 
 interface S3ImageProps {
   imageKey: string;
@@ -17,23 +18,31 @@ export default function S3Image({ imageKey, alt, width, height, className, style
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSignedUrl = async () => {
+    const assetLoader = AssetLoader.getInstance();
+    const cachedUrl = assetLoader.getAssetUrl(imageKey);
+    
+    if (cachedUrl) {
+      setImageUrl(cachedUrl);
+      setIsLoading(false);
+      return;
+    }
+
+    const loadAsset = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/s3?key=${encodeURIComponent(imageKey)}`);
-        const data = await response.json();
-        
-        if (data.url) {
-          setImageUrl(data.url);
-          setIsLoading(false);
+        await assetLoader.preloadGameAssets();
+        const url = assetLoader.getAssetUrl(imageKey);
+        if (url) {
+          setImageUrl(url);
         }
       } catch (error) {
-        console.error('Error fetching signed URL:', error);
+        console.error('Error loading image:', error);
+      } finally {
         setIsLoading(false);
       }
     };
 
-    fetchSignedUrl();
+    loadAsset();
   }, [imageKey]);
 
   if (isLoading || !imageUrl) {

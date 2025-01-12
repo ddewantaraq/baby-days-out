@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import AssetLoader from "../AssetLoader";
 import S3Image from "../S3Image";
 import Ground from "../Ground";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -357,13 +358,21 @@ export default function GameComponent() {
     gameLoopRef.current = requestAnimationFrame(gameLoop);
   }, [checkCollisions, gameOver]);
 
-  const startGame = useCallback(() => {
-    // Ensure all audio is loaded before starting
+  const startGame = useCallback(async () => {
+    // Ensure all audio and assets are loaded before starting
     if (!audioManager.isInitialized()) {
       audioManager.preloadAudio();
     }
 
-    console.log("Starting game..."); // Debug log
+    const assetLoader = AssetLoader.getInstance();
+    await assetLoader.preloadGameAssets();
+    
+    if (!assetLoader.areAllAssetsLoaded()) {
+      console.log("Assets still loading...");
+      return;
+    }
+
+    console.log("Starting game...");
     if (gameLoopRef.current) {
       cancelAnimationFrame(gameLoopRef.current);
     }
