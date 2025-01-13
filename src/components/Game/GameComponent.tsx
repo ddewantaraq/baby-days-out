@@ -14,6 +14,7 @@ import WelcomeComponent from "./WelcomeComponent";
 import ReadyComponent from "./ReadyComponent";
 
 import "./game.css";
+import "@/styles/characters.css";
 import Sky from "../Sky";
 
 const INITIAL_SPEED = 8;
@@ -73,21 +74,23 @@ export default function GameComponent() {
   const checkCollisions = useCallback(() => {
     if (!characterRef.current) return false;
 
-    // Get character's actual DOM position
+    // Get character's actual DOM position relative to the viewport
     const characterRect = characterRef.current.getBoundingClientRect();
-    const characterLeft = characterRect.left + window.scrollX;
-    const characterTop = characterRect.top + window.scrollY;
-
-    // Collision boxes matching new visual size
-    const CHARACTER_WIDTH = 80; // Visual width is 80px
-    const CHARACTER_HEIGHT = 80; // Visual height is 80px
-
-    // Define character collision box with adjusted buffer for new dimensions
+    
+    // Calculate relative size based on viewport width
+    const viewportWidth = window.innerWidth;
+    const scaleFactor = Math.min(1, viewportWidth / 1024); // Base scale on typical desktop width
+    
+    // Adjusted collision box dimensions based on responsive sizes
+    const CHARACTER_WIDTH = (viewportWidth <= 480 ? 40 : viewportWidth <= 840 ? 55 : 65) * scaleFactor;
+    const CHARACTER_HEIGHT = CHARACTER_WIDTH;
+    
+    // Use direct getBoundingClientRect values for more accurate positioning
     const characterBox = {
-      left: characterLeft + 15, // Add buffer from sides
-      right: characterLeft + CHARACTER_WIDTH - 15,
-      top: characterTop + 15, // Add buffer from top/bottom
-      bottom: characterTop + CHARACTER_HEIGHT - 15,
+      left: characterRect.left + (CHARACTER_WIDTH * 0.2), // 20% buffer from sides
+      right: characterRect.right - (CHARACTER_WIDTH * 0.2),
+      top: characterRect.top + (CHARACTER_HEIGHT * 0.2), // 20% buffer from top/bottom
+      bottom: characterRect.bottom - (CHARACTER_HEIGHT * 0.2),
     };
 
     // Check each obstacle
@@ -99,22 +102,29 @@ export default function GameComponent() {
 
       const obstacleRect = obstacleElement.getBoundingClientRect();
 
-      // Define obstacle collision box with adjusted buffer for new dimensions
+      // Calculate obstacle size relative to viewport
+      const obstacleWidth = obstacleRect.width;
+      const obstacleHeight = obstacleRect.height;
+      
+      // Define obstacle collision box with proportional buffers
       const obstacleBox = {
-        left: obstacleRect.left + 10, // Add buffer from sides
-        right: obstacleRect.right - 10,
-        top: obstacleRect.top + 10, // Add buffer from top/bottom
-        bottom: obstacleRect.bottom - 10,
+        left: obstacleRect.left + (obstacleWidth * 0.15), // 15% buffer from sides
+        right: obstacleRect.right - (obstacleWidth * 0.15),
+        top: obstacleRect.top + (obstacleHeight * 0.15), // 15% buffer from top/bottom
+        bottom: obstacleRect.bottom - (obstacleHeight * 0.15),
       };
 
-      // Simple AABB collision with larger tolerance
+      // Improved collision detection with relative tolerance
+      const toleranceFactor = 0.1; // 10% of the smaller dimension
+      const minDimension = Math.min(CHARACTER_WIDTH, CHARACTER_HEIGHT);
+      const tolerance = minDimension * toleranceFactor;
+      
+      // AABB collision with proportional tolerance
       const hasCollision = !(
-        (
-          characterBox.right < obstacleBox.left + 10 || // Add 10px tolerance
-          characterBox.left > obstacleBox.right - 10 || // Add 10px tolerance
-          characterBox.bottom < obstacleBox.top + 10 || // Add 10px tolerance
-          characterBox.top > obstacleBox.bottom - 10
-        ) // Add 10px tolerance
+        characterBox.right < (obstacleBox.left + tolerance) ||
+        characterBox.left > (obstacleBox.right - tolerance) ||
+        characterBox.bottom < (obstacleBox.top + tolerance) ||
+        characterBox.top > (obstacleBox.bottom - tolerance)
       );
 
       if (hasCollision) {
@@ -129,32 +139,40 @@ export default function GameComponent() {
       setIsJumping(true);
       audioManager.playJumpSound();
       if (characterRef.current) {
+        // Force reflow before adding animation class
+        void characterRef.current.offsetHeight;
         characterRef.current.classList.add("jumping");
-        setTimeout(() => {
+        
+        // Use requestAnimationFrame for better timing consistency
+        const jumpEnd = () => {
           if (characterRef.current) {
             characterRef.current.classList.remove("jumping");
           }
-        }, 600);
-      }
-      setCanDoubleJump(score >= DOUBLE_JUMP_MILESTONE);
-      setTimeout(() => {
-        if (characterRef.current) {
           setIsJumping(false);
           setCanDoubleJump(false);
-        }
-      }, 600);
+        };
+        
+        // Ensure animation completion
+        const jumpDuration = 600;
+        setTimeout(jumpEnd, jumpDuration);
+      }
+      setCanDoubleJump(score >= DOUBLE_JUMP_MILESTONE);
     } else if (canDoubleJump && score >= DOUBLE_JUMP_MILESTONE) {
       const characterElement = characterRef.current;
       audioManager.playJumpSound();
       if (characterElement) {
-        characterElement.style.animation = "none";
-        //characterElement.offsetHeight; // Trigger reflow
-        characterElement.style.animation = "";
+        // Force reflow for consistent double jump animation
+        void characterElement.offsetHeight;
         characterElement.classList.remove("jumping");
         characterElement.classList.add("double-jumping");
-        setTimeout(() => {
-          characterElement.classList.remove("double-jumping");
-        }, 600);
+        
+        const doubleJumpEnd = () => {
+          if (characterElement) {
+            characterElement.classList.remove("double-jumping");
+          }
+        };
+        
+        setTimeout(doubleJumpEnd, 600);
       }
       setCanDoubleJump(false);
     }
@@ -524,9 +542,10 @@ export default function GameComponent() {
         <S3Image
           imageKey="baby-boy.png"
           alt="Baby Character"
-          width={80}
-          height={80}
-          style={{ marginBottom: "20px" }}
+          className="w-full h-full"
+          width={65}
+          height={65}
+          style={{ display: "block" }}
         />
       </div>
 
@@ -535,11 +554,15 @@ export default function GameComponent() {
           key={obstacle.id}
           id={`obstacle-${obstacle.id}`}
           className="obstacle"
-          style={{ transform: `translateX(${obstacle.x}px)` }}
+          style={{ 
+            transform: `translateX(${obstacle.x}px)`,
+            bottom: window.innerWidth <= 480 ? '20px' : window.innerWidth <= 840 ? '15px' : '20px'
+          }}
         >
           <S3Image
             imageKey={`${obstacle.type}.png`}
             alt={obstacle.type}
+            className="w-full h-full"
             width={65}
             height={65}
           />

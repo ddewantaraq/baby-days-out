@@ -1,3 +1,30 @@
+/* Character positioning and responsive styles */
+.character {
+    position: absolute;
+    bottom: 18px;
+    left: 50px;
+    transform-style: preserve-3d;
+    z-index: 10;
+    will-change: transform;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 840px) {
+    .character {
+        bottom: 15px;
+        left: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .character {
+        bottom: 12px;
+        left: 30px;
+    }
+}
+
 /* Initial state for obstacles and their animations */
 .obstacle {
     position: absolute;

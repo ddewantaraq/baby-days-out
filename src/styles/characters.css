@@ -1,0 +1,56 @@
+/* Base sizes for character and obstacles */
+.character,
+.obstacle {
+    width: 70px;
+    height: 70px;
+    transform-origin: center bottom;
+    transition: width 0.2s ease, height 0.2s ease;
+}
+
+.character img,
+.obstacle img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+/* Tablet-sized devices */
+@media (max-width: 840px) {
+    .character,
+    .obstacle {
+        width: 55px;
+        height: 55px;
+    }
+    .character {
+        margin-bottom: 12px;
+    }
+    .game-container {
+        transform: translateZ(0);
+    }
+}
+
+/* Mobile devices */
+@media (max-width: 480px) {
+    .character,
+    .obstacle {
+        width: 40px;
+        height: 40px;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+    }
+    .character {
+        margin-bottom: 7px;
+    }
+    .obstacle {
+        bottom: 12px;
+    }
+    
+    /* Ensure proper scaling and positioning for mobile */
+    .character,
+    .obstacle {
+        transform-origin: bottom center;
+        will-change: transform;
+    }
+}
