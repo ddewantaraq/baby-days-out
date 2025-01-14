@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '@/styles/baby-theme.css';
 import './welcome.css';
+import CreditsModal from './CreditsModal';
 
 interface WelcomeComponentProps {
   onUsernameSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }
 
 export default function WelcomeComponent({ onUsernameSubmit }: WelcomeComponentProps) {
+  const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   return (
     <div className="flex flex-col items-center justify-center h-full p-8 welcome-bg">
       <div className="welcome-container">
@@ -32,7 +34,18 @@ export default function WelcomeComponent({ onUsernameSubmit }: WelcomeComponentP
             Let&apos;s Play! 🎈
           </button>
         </form>
+        <button
+          type="button"
+          onClick={() => setIsCreditsOpen(true)}
+          className="baby-button w-full mt-4"
+        >
+          Credits 🎨
+        </button>
       </div>
+      <CreditsModal 
+        isOpen={isCreditsOpen}
+        onClose={() => setIsCreditsOpen(false)}
+      />
     </div>
   );
 }
