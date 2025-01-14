@@ -1,0 +1,129 @@
+.welcome-bg {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  padding: 1rem;
+}
+
+.welcome-bg::before,
+.welcome-bg::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.welcome-bg::before {
+  left: 0;
+  background: url('/baby-bg.png') no-repeat center center;
+  background-size: contain;
+  width: 65vw;
+  height: 80vh;
+  top: -70px;
+  left: -150px;
+  animation: fadeInFromLeft 1s ease-out forwards, float 6s ease-in-out infinite;
+}
+
+.welcome-bg::after {
+  right: 0;
+  background: url('/baby-bg-1.png') no-repeat center center;
+  background-size: contain;
+  width: 55vw;
+  height: 70vh;
+  bottom: -15px;
+  right: -100px;
+  animation: fadeInFromRight 1s ease-out forwards, float 6s ease-in-out infinite;
+}
+
+.welcome-container {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  max-width: 400px;
+  width: 100%;
+  animation: float 6s ease-in-out infinite;
+  margin: 0 auto;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .welcome-bg::before {
+    width: 90vw;
+    height: 50vh;
+    top: -30px;
+    left: -50px;
+  }
+
+  .welcome-bg::after {
+    width: 80vw;
+    height: 40vh;
+    bottom: -10px;
+    right: -50px;
+  }
+
+  .welcome-container {
+    padding: 1.5rem;
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-bg::before {
+    width: 100vw;
+    height: 40vh;
+    top: -20px;
+    left: -30px;
+  }
+
+  .welcome-bg::after {
+    width: 90vw;
+    height: 30vh;
+    bottom: -5px;
+    right: -30px;
+  }
+
+  .welcome-container {
+    padding: 1.25rem;
+    max-width: 95%;
+  }
+}
+
+@media (min-width: 1440px) {
+  .welcome-bg::before {
+    width: 50vw;
+    height: 90vh;
+    top: -100px;
+    left: -200px;
+  }
+
+  .welcome-bg::after {
+    width: 45vw;
+    height: 80vh;
+    bottom: -20px;
+    right: -150px;
+  }
+
+  .welcome-container {
+    max-width: 500px;
+    padding: 2.5rem;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
