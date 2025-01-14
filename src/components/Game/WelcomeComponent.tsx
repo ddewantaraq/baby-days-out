@@ -1,5 +1,6 @@
 import React from 'react';
 import '@/styles/baby-theme.css';
+import './welcome.css';
 
 interface WelcomeComponentProps {
   onUsernameSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
@@ -7,7 +8,7 @@ interface WelcomeComponentProps {
 
 export default function WelcomeComponent({ onUsernameSubmit }: WelcomeComponentProps) {
   return (
-    <div className="flex flex-col items-center justify-center h-full p-8">
+    <div className="flex flex-col items-center justify-center h-full p-8 welcome-bg">
       <div className="welcome-container">
         <h1 className="baby-title">
           Baby Running!

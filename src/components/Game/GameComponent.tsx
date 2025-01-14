@@ -385,6 +385,11 @@ export default function GameComponent() {
     const assetLoader = AssetLoader.getInstance();
     await assetLoader.preloadGameAssets();
 
+    if (!assetLoader.areAllAssetsLoaded()) {
+      console.log("Assets still loading...");
+      return;
+    }
+
     console.log("Starting game...");
     if (gameLoopRef.current) {
       cancelAnimationFrame(gameLoopRef.current);
